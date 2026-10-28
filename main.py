@@ -1,16 +1,31 @@
-# This is a sample Python script.
+import logging
+from fastapi import FastAPI
+import inngest
+import inngest.fast_api
+from inngest.experimental import ai
+from dotenv import load_dotenv
+import uuid
+import os
+import datetime
 
-# Press Ctrl+F5 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+load_dotenv()
 
+inngest_client = inngest.Inngest(
+    app_id="rag_app",
+    logger=logging.getLogger("uvicorn"),
+    is_production=False,
+    serializer=inngest.PydanticSerializer()
+)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press F9 to toggle the breakpoint.
+@inngest_client.create_function(
+    fn_id="RAG: Ingest PDF",
+    trigger=inngest.TriggerEvent(event="rag/ingest_pdf")
+)
 
+async def rag_ingest_pdf(ctx: inngest.Context):
+    return {"Hello": "World"}
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+app = FastAPI()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+inngest.fast_api.serve(app, inngest_client, [rag_ingest_pdf])
+
